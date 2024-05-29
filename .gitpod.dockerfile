@@ -1,16 +1,33 @@
 # Fetch Ubuntu Latest
-FROM gitpod/workspace-full:latest
+FROM daffa06/soulvibe-kernel:v1
 
 # Root
 USER root
 
+# Verify the presence and execute the script
+RUN if [ -f /usr/src/packages_env.sh ]; then \
+        chmod +x /usr/src/packages_env.sh && \
+        /usr/src/packages_env.sh; \
+    else \
+        echo "packages_env.sh not found in base image"; \
+    fi
+
+# sudo hax
+RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /usr/bin/fish -p gitpod gitpod \
+    && sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers \
+    && chmod 0440 /etc/sudoers
+
+# Set default shell to bash
+SHELL ["/bin/bash", "-c"]
+
+# Set shell use bash
+RUN chsh -s /bin/bash
+
+# env bash
+ENV SHELL /bin/bash
+
+# Entry point: start with bash, then switch to fish
+ENTRYPOINT ["/bin/bash", "-c", "fish"]
+
 # Start
 RUN echo Welcome to Workspace Zone
-
-# Dependency
-RUN apt update && apt upgrade -y
-RUN sudo apt install ssh openssh-server screen python3 git git-core openjdk-8-jdk android-tools-adb bc bison \
-build-essential curl flex g++-multilib gcc-multilib gnupg gperf imagemagick lib32ncurses-dev \
-lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev \
-libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc yasm zip zlib1g-dev \
-libtinfo5 libncurses5 neofetch llvm lld -y
