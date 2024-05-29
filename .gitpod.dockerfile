@@ -12,5 +12,22 @@ RUN if [ -f /usr/src/packages_env.sh ]; then \
         echo "packages_env.sh not found in base image"; \
     fi
 
+# sudo hax
+RUN useradd -l -u 33333 -G sudo -md /home/gitpod -s /usr/bin/fish -p gitpod gitpod \
+    && sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers \
+    && chmod 0440 /etc/sudoers
+
+# Set default shell to bash
+SHELL ["/bin/bash", "-c"]
+
+# Set shell use bash
+RUN chsh -s /bin/bash
+
+# env bash
+ENV SHELL /bin/bash
+
+# Entry point: start with bash, then switch to fish
+ENTRYPOINT ["/bin/bash", "-c", "fish"]
+
 # Start
 RUN echo Welcome to Workspace Zone
